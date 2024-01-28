@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Departments and Employees CRUD</title>
+    <style>
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 20px;
+}
+
+h1 {
+    color: #333;
+}
+
+form {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+input,
+textarea,
+select {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+li {
+    margin-bottom: 10px;
+}
+
+hr {
+    border: 1px solid #ccc;
+    margin: 20px 0;
+}
+
+
+
+    </style>
+</head>
+<body>
+
+    <h1>Departments CRUD</h1>
+
+    <!-- Formulaire pour créer un département -->
+    <form id="departmentForm">
+        <label for="departmentName">Name:</label>
+        <input type="text" id="departmentName" required>
+        <label for="departmentAddress">Address:</label>
+        <input type="text" id="departmentAddress" required>
+        <label for="departmentDescription">Description:</label>
+        <textarea id="departmentDescription" required></textarea>
+        <button type="button" onclick="createDepartment()">Create Department</button>
+    </form>
+
+    <!-- Liste des départements -->
+    <ul id="departmentList"></ul>
+
+    <hr>
+
+    <h1>Employees CRUD</h1>
+
+    <!-- Formulaire pour créer un employé -->
+    <form id="employeeForm">
+        <label for="firstName">First Name:</label>
+        <input type="text" id="firstName" required>
+        <label for="lastName">Last Name:</label>
+        <input type="text" id="lastName" required>
+        <label for="birthdate">Birthdate:</label>
+        <input type="date" id="birthdate" required>
+        <label for="email">Email:</label>
+        <input type="email" id="email" required>
+        <label for="phoneNumber">Phone Number:</label>
+        <input type="tel" id="phoneNumber" required>
+        <label for="position">Position:</label>
+        <input type="text" id="position" required>
+        <button type="button" onclick="createEmployee()">Create Employee</button>
+    </form>
+    <ul id="employeeList"></ul>
+    <hr>
+    <h1>Ajout Department Employee</h1>
+
+    <form id="addDepartmentForm">
+        <label for="employeeId">Employee ID:</label>
+        <input type="text" id="employeeIdForAdd" required>
+        
+        <label for="departmentSelect">Select Department:</label>
+        <select id="departmentSelect" required></select>
+    
+        <button type="button" onclick="addDepartmentToEmployee()">Add Department to Employee</button>
+    </form>
+    <hr>
+
+    <h1>Creation attendance</h1>
+
+    <!-- Liste des employés -->
+    <form id="createAttendanceForm">
+        <label for="employeeSelect">Select Employee:</label>
+        <select id="employeeSelectForAttendance" required></select>
+    
+        <label for="startDate">Start Date:</label>
+        <input type="date" id="startDate" required>
+    
+        <label for="endDate">End Date:</label>
+        <input type="date" id="endDate" required>
+
+       
+        <button type="button" onclick="createAttendance()">Create Attendance</button>
+    </form>
+    <h2>Attendances</h2>
+    <ul id="attendanceList"></ul>
+
+    <hr>
+    <h1>Création/Modifiaction LeaveRequest</h1>
+    <!-- Formulaire pour créer/modifier une LeaveRequest -->
+<form id="leaveRequestForm">
+    <label for="employeeIdForLeaveRequest">Select Employee:</label>
+    <select id="employeeSelectForLeaveRequest" required></select>
+
+    <label for="requestDate">Request Date:</label>
+    <input type="date" id="requestDateLeaveRequest" required>
+
+    <label for="startDateLeaveRequest">Start Date:</label>
+    <input type="date" id="startDateLeaveRequest" required>
+
+    <label for="endDateLeaveRequest">End Date:</label>
+    <input type="date" id="endDateLeaveRequest" required>
+
+    <label for="employeeId">Status ID:</label>
+    <input type="text" id="leaveRequestStatusId" required>
+
+    <button type="button" onclick="submitLeaveRequest()">Submit Leave Request</button>
+    
+</form>
+
+<!-- Liste des LeaveRequests -->
+<h2>Leave Requests</h2>
+<ul id="leaveRequestList"></ul>
+    <script>
+        // Fonctions JavaScript pour interagir avec l'API
+        // Assurez-vous d'ajuster les URL en fonction de votre API
+
+        async function createDepartment() {
+            const name = document.getElementById('departmentName').value;
+            const address = document.getElementById('departmentAddress').value;
+            const description = document.getElementById('departmentDescription').value;
+
+            const response = await fetch('https://localhost:7011/api/Departments', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name, address, description })
+            });
+
+            if (response.ok) {
+                // Actualiser la liste des départements après la création
+                fetchDepartments();
+            } else {
+                console.error('Error creating department');
+            }
+        }
+
+        async function fetchDepartments() {
+            const response = await fetch('https://localhost:7011/api/Departments');
+            const departments = await response.json();
+
+            const departmentList = document.getElementById('departmentList');
+            departmentList.innerHTML = ''; // Effacer la liste actuelle
+
+            departments.forEach(department => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `${department.name} - ${department.address} - ${department.description}`;
+                departmentList.appendChild(listItem);
+            });
+        }
+
+        async function createEmployee() {
+            const firstName = document.getElementById('firstName').value;
+            const lastName = document.getElementById('lastName').value;
+            const birthdate = document.getElementById('birthdate').value;
+            const email = document.getElementById('email').value;
+            const phoneNumber = document.getElementById('phoneNumber').value;
+            const position = document.getElementById('position').value;
+
+            const response = await fetch('https://localhost:7011/api/Employees', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ firstName, lastName, birthdate, email, phoneNumber, position })
+            });
+
+            if (response.ok) {
+                // Actualiser la liste des employés après la création
+                fetchEmployees();
+            } else {
+                console.error('Error creating employee');
+            }
+        }
+
+        async function fetchEmployees() {
+            const response = await fetch('https://localhost:7011/api/Employees');
+            const employees = await response.json();
+
+            const employeeList = document.getElementById('employeeList');
+            employeeList.innerHTML = ''; // Effacer la liste actuelle
+
+            employees.forEach(employee => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `${employee.firstName} ${employee.lastName} - ${employee.position}`;
+                employeeList.appendChild(listItem);
+            });
+        }
+        async function updateDepartment(departmentId) {
+        const name = prompt('Enter new department name:');
+        const address = prompt('Enter new department address:');
+        const description = prompt('Enter new department description:');
+
+        const response = await fetch(`https://localhost:7011/api/Departments/${departmentId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name, address, description })
+        });
+
+        if (response.ok) {
+            // Actualiser la liste des départements après la modification
+            fetchDepartments();
+        } else {
+            console.error('Error updating department');
+        }
+    }
+
+    async function deleteDepartment(departmentId) {
+        const response = await fetch(`https://localhost:7011/api/Departments/${departmentId}`, {
+            method: 'DELETE'
+        });
+
+        if (response.ok) {
+            // Actualiser la liste des départements après la suppression
+            fetchDepartments();
+        } else {
+            console.error('Error deleting department');
+        }
+    }
+
+    async function updateEmployee(employeeId) {
+        const firstName = prompt('Enter new employee first name:');
+        const lastName = prompt('Enter new employee last name:');
+        const birthdate = prompt('Enter new employee birthdate:');
+        const email = prompt('Enter new employee email:');
+        const phoneNumber = prompt('Enter new employee phone number:');
+        const position = prompt('Enter new employee position:');
+
+        const response = await fetch(`https://localhost:7011/api/Employees/${employeeId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ firstName, lastName, birthdate, email, phoneNumber, position })
+        });
+
+        if (response.ok) {
+            // Actualiser la liste des employés après la modification
+            fetchEmployees();
+        } else {
+            console.error('Error updating employee');
+        }
+    }
+
+    async function deleteEmployee(employeeId) {
+        const response = await fetch(`https://localhost:7011/api/Employees/${employeeId}`, {
+            method: 'DELETE'
+        });
+
+        if (response.ok) {
+            // Actualiser la liste des employés après la suppression
+            fetchEmployees();
+        } else {
+            console.error('Error deleting employee');
+        }
+    }
+    async function fetchDepartments() {
+        const response = await fetch('https://localhost:7011/api/Departments');
+        const departments = await response.json();
+
+        const departmentList = document.getElementById('departmentList');
+        departmentList.innerHTML = '';
+
+        departments.forEach(department => {
+            const listItem = document.createElement('li');
+            listItem.textContent = `${department.name} - ${department.address} - ${department.description}`;
+
+            // Boutons Modifier et Supprimer pour les départements
+            const updateButton = document.createElement('button');
+            updateButton.textContent = 'Modifier';
+            updateButton.addEventListener('click', () => updateDepartment(department.id));
+
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Supprimer';
+            deleteButton.addEventListener('click', () => deleteDepartment(department.id));
+
+            listItem.appendChild(updateButton);
+            listItem.appendChild(deleteButton);
+
+            departmentList.appendChild(listItem);
+        });
+    }
+
+    async function fetchEmployees() {
+        const response = await fetch('https://localhost:7011/api/Employees');
+        const employees = await response.json();
+
+        const employeeList = document.getElementById('employeeList');
+        employeeList.innerHTML = '';
+
+        employees.forEach(employee => {
+            const listItem = document.createElement('li');
+            listItem.textContent = `${employee.firstName} ${employee.lastName} - ${employee.position}`;
+
+            // Boutons Modifier et Supprimer pour les employés
+            const updateButton = document.createElement('button');
+            updateButton.textContent = 'Modifier';
+            updateButton.addEventListener('click', () => updateEmployee(employee.id));
+
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Supprimer';
+            deleteButton.addEventListener('click', () => deleteEmployee(employee.id));
+
+            listItem.appendChild(updateButton);
+            listItem.appendChild(deleteButton);
+
+            employeeList.appendChild(listItem);
+        });
+    }
+    async function fetchDepartmentsForDropdown() {
+    const response = await fetch('https://localhost:7011/api/Departments');
+    const departments = await response.json();
+
+    const departmentSelect = document.getElementById('departmentSelect');
+    departmentSelect.innerHTML = ''; // Effacer la liste actuelle
+
+    departments.forEach(department => {
+        const option = document.createElement('option');
+        option.value = department.id;
+        option.textContent = department.name;
+        departmentSelect.appendChild(option);
+    });
+}
+
+async function addDepartmentToEmployee() {
+    const employeeId = document.getElementById('employeeIdForAdd').value;
+    const departmentId = document.getElementById('departmentSelect').value;
+
+    const response = await fetch(`https://localhost:7011/api/EmployeesDepartement/${employeeId}/departments/${departmentId}`, {
+        method: 'PUT', // Utilisez la méthode appropriée pour votre API
+        headers: {
+            'Content-Type': 'application/json'
+        }
+        // Vous pouvez ajouter un corps JSON si nécessaire
+    });
+
+    if (response.ok) {
+        // Actualiser la liste des employés après l'ajout du département
+        fetchEmployees();
+    } else {
+        console.error('Error adding department to employee');
+    }
+}
+async function fetchEmployeesForAttendanceDropdown() {
+    const response = await fetch('https://localhost:7011/api/Employees');
+    const employees = await response.json();
+
+    const employeeSelectForAttendance = document.getElementById('employeeSelectForAttendance');
+    employeeSelectForAttendance.innerHTML = ''; // Effacer la liste actuelle
+
+    employees.forEach(employee => {
+        const option = document.createElement('option');
+        option.value = employee.employeeId;
+       
+        option.textContent = employee.firstName +' '+ employee.lastName;
+        employeeSelectForAttendance.appendChild(option);
+    });
+    console.log(employees);
+}
+
+async function createAttendance() {
+    const employeeId = document.getElementById('employeeSelectForAttendance').value;
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+
+    const response = await fetch('https://localhost:7011/api/Attendance', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ employeeId, startDate, endDate })
+    });
+
+    if (response.ok) {
+        // Actualiser la liste des attendances après la création
+        fetchAttendances();
+    } else {
+        console.error('Error creating attendance',employeeId);
+    }
+}
+async function fetchAttendances() {
+    const response = await fetch('https://localhost:7011/api/Attendance');
+    
+    const attendances = await response.json();
+   
+    
+    const attendanceList = document.getElementById('attendanceList');
+    attendanceList.innerHTML = ''; // Effacer la liste actuelle
+
+    attendances.forEach(attendance => {
+        const listItem = document.createElement('li');
+        listItem.textContent = `EmployeeId: ${attendance.employeeId}, Start Date: ${attendance.startDate}, End Date: ${attendance.endDate}`;
+        attendanceList.appendChild(listItem);
+    });
+}
+async function fetchEmployeesForLeaveRequestDropdown() {
+    const response = await fetch('https://localhost:7011/api/Employees');
+    const employees = await response.json();
+
+    const employeeSelectForLeaveRequest = document.getElementById('employeeSelectForLeaveRequest');
+    employeeSelectForLeaveRequest.innerHTML = ''; // Effacer la liste actuelle
+
+    employees.forEach(employee => {
+        const option = document.createElement('option');
+        option.value = employee.employeeId;
+        option.textContent = `${employee.firstName} ${employee.lastName}`;
+        employeeSelectForLeaveRequest.appendChild(option);
+    });
+}
+
+async function fetchLeaveRequests() {
+    const response = await fetch('https://localhost:7011/api/LeaveRequest');
+    const leaveRequests = await response.json();
+
+    const leaveRequestList = document.getElementById('leaveRequestList');
+    leaveRequestList.innerHTML = ''; // Effacer la liste actuelle
+
+    leaveRequests.forEach(leaveRequest => {
+        const listItem = document.createElement('li');
+        listItem.textContent = `Employee: ${leaveRequest.employeeId}, Request Date: ${leaveRequest.requestDate}, Start Date: ${leaveRequest.startDate}, End Date: ${leaveRequest.endDate}, Status: ${leaveRequest.leaveRequestStatusId}`;
+        
+        const updateButton = document.createElement('button');
+        updateButton.textContent = 'Modifier';
+        updateButton.addEventListener('click', () => updateLeaveRequest(leaveRequest.id));
+       
+        leaveRequestList.appendChild(updateButton);
+        leaveRequestList.appendChild(listItem);
+    });
+}
+
+async function submitLeaveRequest() {
+    const employeeId = document.getElementById('employeeSelectForLeaveRequest').value;
+    const startDate = document.getElementById('startDateLeaveRequest').value;
+    const endDate = document.getElementById('endDateLeaveRequest').value;
+    const leaveRequestStatusId = document.getElementById('leaveRequestStatusId').value;
+    const requestDate = document.getElementById('requestDateLeaveRequest').value;
+
+    const response = await fetch('https://localhost:7011/api/LeaveRequest', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ employeeId, requestDate, startDate, endDate, leaveRequestStatusId })
+    });
+
+    if (response.ok) {
+        // Actualiser la liste des LeaveRequests après la création
+        fetchLeaveRequests();
+    } else {
+        console.error('Error submitting leave request', employeeId, startDate, endDate, leaveRequestStatusId);
+    }
+}
+
+async function updateLeaveRequest(selectedLeaveRequestId) {
+        const employeeId = document.getElementById('employeeSelectForLeaveRequest').value;;
+        
+        const leaveRequestStatusId = prompt('Enter new leaveRequestStatus:');
+        
+
+    const response = await fetch(`https://localhost:7011/api/LeaveRequest/${selectedLeaveRequestId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ employeeId, leaveRequestStatusId })
+    });
+
+    if (response.ok) {
+        // Actualiser la liste des LeaveRequests après la modification
+        fetchLeaveRequests();
+       
+    } else {
+        console.error('Error updating leave request',selectedLeaveRequestId,employeeId,requestDate, startDate, endDate, leaveRequestStatusId);
+    }
+}
+// Chargement des employés et des LeaveRequests au chargement de la page
+fetchEmployeesForLeaveRequestDropdown();
+fetchLeaveRequests();
+// Chargement des employés au chargement de la page
+fetchEmployeesForAttendanceDropdown();
+// Chargement des départements au chargement de la page
+fetchDepartmentsForDropdown();
+fetchAttendances();
+        // Charger la liste des départements et des employés au chargement de la page
+        fetchDepartments();
+        fetchEmployees();
+    </script>
+
+</body>
+</html>
