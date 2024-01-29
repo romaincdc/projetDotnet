@@ -39,8 +39,8 @@ builder.Services.AddCors(options =>
                       policy =>
                       {
                           policy.WithOrigins("http://example.com",
-                                              "http://www.contoso.com",
-                                              "file:///Users/romaincarvalho/Documents/Cours%20N5%2023-24/dotnet/test2/FrontEnd/index.html");
+                                              
+                                              );
                       });
 });
 
